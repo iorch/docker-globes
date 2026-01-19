@@ -1,0 +1,199 @@
+/*
+ * GLoBES AEDL Configuration: Reactor CEvNS on Germanium
+ *
+ * Based on CONUS+ experiment parameters
+ *
+ * Target: Germanium-73
+ * Mass: 1 kg
+ * Baseline: 25 m from reactor core
+ * Reactor: 3 GW thermal power
+ * Threshold: 0.2 keV electron equivalent (after quenching)
+ * Quenching factor: 0.20 (keV_ee / keV_nr)
+ */
+
+/* =================================================================
+   GLOBAL PARAMETERS
+   ================================================================= */
+
+/* Reactor and detector parameters */
+$baseline = 25.0      /* meters */
+$mass = 1.0           /* kg */
+$power = 3.0          /* GW thermal */
+$quenching = 0.20     /* Ge quenching factor */
+
+/* Observable energy range (electron equivalent, after quenching) */
+$emin = 0.0002        /* 0.2 keV in GeV */
+$emax = 0.010         /* 10 keV in GeV */
+$bins = 50            /* Number of energy bins */
+
+/* Neutrino energy sampling range */
+$sampling_min = 0.0018  /* 1.8 MeV in GeV */
+$sampling_max = 0.008   /* 8.0 MeV in GeV */
+$sampling_points = 500  /* Integration points */
+
+/* =================================================================
+   REACTOR FLUX
+   ================================================================= */
+
+nuflux(#reactor_flux_U235)<
+  /* Flux file should contain U-235 fission spectrum
+     Format: E_nu[MeV]  dN/dE[1/MeV/fission] */
+  @flux_file = "../data/reactor_flux_U235.dat"
+
+  @time = YEARS        /* Time units */
+  @power = $power      /* Reactor power normalization */
+  @norm = 1.0          /* Additional normalization factor */
+
+  /* Distance determines 1/r² scaling */
+  @distance = $baseline  /* meters */
+>
+
+/* =================================================================
+   CROSS SECTION
+   ================================================================= */
+
+cross(#cevns_ge73)<
+  /* CEvNS cross section on Ge-73
+     Should be pre-computed including:
+     - Weak charge for Ge-73: Q_W = N - Z(1-4sin²θ_W) ≈ 29.4
+     - Helm form factor
+     Format: E_nu[GeV]  sigma[cm²] */
+  @cross_file = "../data/cevns_ge_xsec.dat"
+>
+
+/* =================================================================
+   DETECTOR
+   ================================================================= */
+
+detector(#ge_detector)<
+  @target_mass = $mass           /* kg */
+  @target_power = 1.0             /* Not used for CEvNS */
+  @target_norm = 1.0              /* Normalization */
+
+  @energy_window = {$emin, $emax}  /* Observable energy range */
+>
+
+/* =================================================================
+   ENERGY RESOLUTION AND SMEARING
+   ================================================================= */
+
+/* Energy resolution: ~5% at 1 keV, improves with √E */
+energy(#ge_resolution)<
+  @type = 1                      /* 1 = Gaussian smearing */
+  @sigma_function = #sigma_ge
+>
+
+energy(#sigma_ge)<
+  /* σ(E) = 0.05 × √(E[keV]) converted to GeV
+     At E = 0.001 GeV (1 keV): σ ≈ 0.05 keV ≈ 5×10⁻⁵ GeV */
+  @expression = 0.05*sqrt(E*1000.0)*0.001
+>
+
+/* Detection efficiency (threshold turn-on curve) */
+energy(#ge_efficiency)<
+  /* Energy points in GeV */
+  @energy = {0.0000, 0.0001, 0.00015, 0.0002, 0.0003, 0.001, 0.010}
+
+  /* Post-smearing efficiency at each energy */
+  @post_smearing_efficiency = {0.0, 0.1, 0.5, 0.85, 0.95, 0.98, 0.98}
+>
+
+/* =================================================================
+   CHANNELS
+   ================================================================= */
+
+/* Signal channel: electron antineutrinos from reactor */
+channel(#cevns_signal)<
+  /* Channel format: flux : sign : init_flavor : final_flavor : xsec : detector
+     sign: + for neutrinos, - for antineutrinos
+     init/final flavor: e, m, t (CEvNS: no flavor change, so same) */
+  @channel = #reactor_flux_U235 : + : e : e : #cevns_ge73 : #ge_detector
+
+  @pre_smearing_efficiencies = {1.0}           /* Before energy resolution */
+  @post_smearing_efficiencies = #ge_efficiency  /* Threshold turn-on */
+>
+
+/* Background channel (simplified: flat background) */
+nuflux(#flat_background)<
+  @builtin = 5           /* Flat spectrum */
+  @power = 0.03          /* Arbitrary units, tune to match data */
+  @norm = 1.0
+>
+
+channel(#background)<
+  @channel = #flat_background : + : e : e : #cevns_ge73 : #ge_detector
+  @pre_smearing_efficiencies = {1.0}
+  @post_smearing_efficiencies = #ge_efficiency
+>
+
+/* =================================================================
+   RULES
+   ================================================================= */
+
+/* Analysis rule with signal and background */
+rule(#CEvNS_Analysis)<
+  /* Signal */
+  @signal = 1.0@#cevns_signal
+
+  /* Signal systematic uncertainty: 2.5% normalization, 0% tilt */
+  @signalerror = 0.025 : 0.0
+
+  /* Background */
+  @background = 1.0@#background
+
+  /* Background uncertainty: 15% normalization */
+  @backgrounderror = 0.15 : 0.0
+
+  /* Chi-squared functions */
+  @sys_on_function = "chiSpectrumTilt"    /* With systematics */
+  @sys_off_function = "chiNoSysSpectrum"  /* Without systematics */
+
+  /* Energy window for analysis */
+  @energy_window = {$emin, $emax}
+>
+
+/* Alternative rule: signal only (no background) */
+rule(#CEvNS_SignalOnly)<
+  @signal = 1.0@#cevns_signal
+  @signalerror = 0.025 : 0.0
+
+  @background = 0.0@#background  /* Zero background */
+
+  @sys_on_function = "chiSpectrumTilt"
+  @sys_off_function = "chiNoSysSpectrum"
+
+  @energy_window = {$emin, $emax}
+>
+
+/* =================================================================
+   NOTES
+   ==================================================================
+
+   Usage:
+   ------
+   1. Ensure data files exist:
+      - ../data/reactor_flux_U235.dat
+      - ../data/cevns_ge_xsec.dat
+
+   2. Load in GLoBES:
+      globes reactor_ge.glb
+
+   3. Use in C++ code:
+      glbInitExperiment("reactor_ge.glb", &glb_experiment_list[0], &glb_num_of_exps);
+      double rate = glbGetRuleRate(0, 0);  // Rule 0, experiment 0
+
+   Limitations:
+   -----------
+   - GLoBES designed for oscillation experiments (flavor change)
+   - CEvNS is neutral current (no flavor change)
+   - This configuration is a workaround using GLoBES infrastructure
+   - Cross sections must be pre-computed externally
+
+   Parameters:
+   ----------
+   - Energy units: GeV (GLoBES convention)
+   - Observable energies: 0.2-10 keV_ee (after quenching)
+   - Nuclear recoil energies: 1-50 keV_nr (before quenching)
+   - Neutrino energies: 1.8-8 MeV
+
+   ================================================================= */

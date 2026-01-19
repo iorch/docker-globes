@@ -1,0 +1,190 @@
+/*
+ * GLoBES AEDL Configuration: Reactor CEvNS on Xenon
+ *
+ * Based on NUCLEUS experiment parameters
+ *
+ * Target: Xenon-131
+ * Mass: 10 g fiducial (scalable to 1 kg)
+ * Baseline: 10 m from reactor core (closer than Ge)
+ * Reactor: 4 GW thermal power
+ * Threshold: 0.15 keV electron equivalent (after quenching)
+ * Quenching factor: 0.15 (keV_ee / keV_nr)
+ */
+
+/* =================================================================
+   GLOBAL PARAMETERS
+   ================================================================= */
+
+/* Reactor and detector parameters */
+$baseline = 10.0      /* meters (closer to reactor) */
+$mass = 0.010         /* kg (10 g fiducial, can scale to 1 kg) */
+$power = 4.0          /* GW thermal */
+$quenching = 0.15     /* Xe quenching factor (lower than Ge) */
+
+/* Observable energy range (electron equivalent, after quenching) */
+$emin = 0.00015       /* 0.15 keV in GeV (lower threshold than Ge) */
+$emax = 0.005         /* 5 keV in GeV */
+$bins = 50            /* Number of energy bins */
+
+/* Neutrino energy sampling range */
+$sampling_min = 0.0018  /* 1.8 MeV in GeV */
+$sampling_max = 0.008   /* 8.0 MeV in GeV */
+$sampling_points = 500  /* Integration points */
+
+/* =================================================================
+   REACTOR FLUX
+   ================================================================= */
+
+nuflux(#reactor_flux_U235)<
+  @flux_file = "../data/reactor_flux_U235.dat"
+  @time = YEARS
+  @power = $power
+  @norm = 1.0
+  @distance = $baseline  /* 10 m - closer than Ge detector */
+>
+
+/* =================================================================
+   CROSS SECTION
+   ================================================================= */
+
+cross(#cevns_xe131)<
+  /* CEvNS cross section on Xe-131
+     Weak charge for Xe-131: Q_W = N - Z(1-4sin²θ_W) ≈ 46.6
+     Much larger than Ge → higher cross section!
+     Format: E_nu[GeV]  sigma[cm²] */
+  @cross_file = "../data/cevns_xe_xsec.dat"
+>
+
+/* =================================================================
+   DETECTOR
+   ================================================================= */
+
+detector(#xe_detector)<
+  @target_mass = $mass
+  @target_power = 1.0
+  @target_norm = 1.0
+  @energy_window = {$emin, $emax}
+>
+
+/* =================================================================
+   ENERGY RESOLUTION AND SMEARING
+   ================================================================= */
+
+/* Energy resolution: ~10% at 1 keV (worse than Ge) */
+energy(#xe_resolution)<
+  @type = 1
+  @sigma_function = #sigma_xe
+>
+
+energy(#sigma_xe)<
+  /* σ(E) = 0.10 × √(E[keV]) converted to GeV
+     Xenon has worse energy resolution than Ge */
+  @expression = 0.10*sqrt(E*1000.0)*0.001
+>
+
+/* Detection efficiency with threshold turn-on */
+energy(#xe_efficiency)<
+  /* More gradual turn-on near threshold for liquid xenon */
+  @energy = {0.0000, 0.0001, 0.00015, 0.0002, 0.0003, 0.0005, 0.005}
+  @post_smearing_efficiency = {0.0, 0.05, 0.3, 0.6, 0.85, 0.95, 0.95}
+>
+
+/* =================================================================
+   CHANNELS
+   ================================================================= */
+
+/* Signal channel */
+channel(#cevns_signal_xe)<
+  @channel = #reactor_flux_U235 : + : e : e : #cevns_xe131 : #xe_detector
+  @pre_smearing_efficiencies = {1.0}
+  @post_smearing_efficiencies = #xe_efficiency
+>
+
+/* Background channel */
+nuflux(#flat_background)<
+  @builtin = 5
+  @power = 0.02          /* Lower background rate for small detector */
+  @norm = 1.0
+>
+
+channel(#background_xe)<
+  @channel = #flat_background : + : e : e : #cevns_xe131 : #xe_detector
+  @pre_smearing_efficiencies = {1.0}
+  @post_smearing_efficiencies = #xe_efficiency
+>
+
+/* =================================================================
+   RULES
+   ================================================================= */
+
+/* Analysis rule with signal and background */
+rule(#CEvNS_Xe_Analysis)<
+  @signal = 1.0@#cevns_signal_xe
+  @signalerror = 0.030 : 0.0  /* 3% flux uncertainty */
+
+  @background = 1.0@#background_xe
+  @backgrounderror = 0.20 : 0.0  /* 20% background uncertainty (higher for small detector) */
+
+  @sys_on_function = "chiSpectrumTilt"
+  @sys_off_function = "chiNoSysSpectrum"
+
+  @energy_window = {$emin, $emax}
+>
+
+/* Signal-only rule */
+rule(#CEvNS_Xe_SignalOnly)<
+  @signal = 1.0@#cevns_signal_xe
+  @signalerror = 0.030 : 0.0
+
+  @background = 0.0@#background_xe
+
+  @sys_on_function = "chiSpectrumTilt"
+  @sys_off_function = "chiNoSysSpectrum"
+
+  @energy_window = {$emin, $emax}
+>
+
+/* =================================================================
+   NOTES
+   ==================================================================
+
+   Xenon vs Germanium:
+   -------------------
+   Advantages of Xenon:
+   - Higher weak charge Q_W (46.6 vs 29.4) → ~2.5× higher cross section
+   - Lower quenching → better for low-energy physics
+   - Can achieve very low threshold (< 0.2 keV_ee)
+   - Scalable (liquid xenon TPCs)
+
+   Disadvantages:
+   - Worse energy resolution (~10% vs 5% at 1 keV)
+   - More complex detector (cryogenics, dual-phase)
+   - Lower quenching factor → smaller observable energy
+
+   Expected Rates (10 g Xe at 10 m from 4 GW):
+   -------------------------------------------
+   - No threshold: ~5-10 events/day
+   - 0.15 keV threshold: ~3-5 events/day
+   - Scales linearly with mass
+
+   For 1 kg detector (100× mass):
+   - 300-500 events/day @ 0.15 keV threshold
+   - 500-1000 events/day with no threshold
+
+   Baseline Optimization:
+   ---------------------
+   - Closer baseline (10 m vs 25 m):
+     * Flux × 6.25 higher (25²/10² = 6.25)
+     * But: Higher background near reactor core
+     * Trade-off depends on detector shielding
+
+   Usage Example:
+   -------------
+   glbInitExperiment("reactor_xe.glb", &glb_experiment_list[0], &glb_num_of_exps);
+   double rate_xe = glbGetRuleRate(0, 0);
+
+   // Compare with Ge detector at same baseline
+   glbInitExperiment("reactor_ge.glb", &glb_experiment_list[1], &glb_num_of_exps);
+   double rate_ge = glbGetRuleRate(0, 1);
+
+   ================================================================= */
