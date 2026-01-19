@@ -37,6 +37,8 @@ This container includes complete tools for reactor-based CEvNS simulations:
 #### Quick Example (Python)
 ```bash
 cd /workspace/python
+apt update
+apt install pip
 pip install -r requirements.txt
 
 # Calculate event rates
