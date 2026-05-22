@@ -83,9 +83,12 @@ dσ/dT = (G_F² M_A)/(4π) · Q_W² · F²(Q²) · [1 - (M_A T)/(2 E_ν²)]
 - F(Q²) = Helm form factor
 
 **Detector-Specific Values**:
-- Germanium-73: A=73, Z=32, Q_W≈29.4, quenching=0.20
-- Xenon-131: A=131, Z=54, Q_W≈46.6, quenching=0.15
-- Argon-40: A=40, Z=18, Q_W≈16.0, quenching=0.23
+- Germanium-73: A=73, Z=32, Q_W≈38.6, quenching=0.20
+- Xenon-131: A=131, Z=54, Q_W≈72.9, quenching=0.15
+- Argon-40: A=40, Z=18, Q_W≈20.6, quenching=0.23
+- Cesium-133: A=133, Z=55, Q_W≈73.9, quenching=0.08
+
+(Q_W = N − Z(1 − 4·sin²θ_W) with sin²θ_W = 0.23121.)
 
 **Typical Event Rates** (1 kg Ge, 25m, 3 GW reactor):
 - No threshold: ~100 events/day

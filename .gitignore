@@ -1,0 +1,4 @@
+examples/cpp/basic_rate_calculator
+examples/cpp/mc_event_generator
+examples/python/__pycache__/
+*.pyc
