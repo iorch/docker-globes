@@ -1,7 +1,7 @@
 FROM gcc:12.1.0-bullseye
 
 RUN apt-get update &&\
-    apt-get install -y libgsl-dev
+    apt-get install -y libgsl-dev python3 python3-numpy python3-scipy python3-matplotlib
 
 ADD . .
 

@@ -37,15 +37,12 @@ This container includes complete tools for reactor-based CEvNS simulations:
 #### Quick Example (Python)
 ```bash
 cd /workspace/python
-apt update
-apt install pip
-pip install -r requirements.txt
 
 # Calculate event rates
-python cevns_calculator.py --detector Ge --mass 1.0 --baseline 25.0 --power 3.0
+python3 cevns_calculator.py --detector Ge --mass 1.0 --baseline 25.0 --power 3.0
 
 # Run Monte Carlo simulation
-python mc_simulation.py --nevents 10000 --output my_simulation
+python3 mc_simulation.py --nevents 10000 --output my_simulation
 ```
 
 #### Quick Example (C++)
