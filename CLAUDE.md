@@ -140,10 +140,11 @@ EOF
 ### Python Examples
 ```bash
 cd /workspace/python
-pip install -r requirements.txt
-python cevns_calculator.py --help
-python mc_simulation.py --nevents 10000 --output sim1
+python3 cevns_calculator.py --help
+python3 mc_simulation.py --nevents 10000 --output sim1
 ```
+
+Python and the scientific stack (numpy, scipy, matplotlib) are installed in the image, so no `pip install` step is needed.
 
 ### C++ Examples
 ```bash

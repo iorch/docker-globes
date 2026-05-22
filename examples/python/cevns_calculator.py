@@ -27,6 +27,7 @@ DETECTORS = {
     'Ge': {'A': 73, 'Z': 32, 'quenching': 0.20, 'name': 'Germanium'},
     'Xe': {'A': 131, 'Z': 54, 'quenching': 0.15, 'name': 'Xenon'},
     'Ar': {'A': 40, 'Z': 18, 'quenching': 0.23, 'name': 'Argon'},
+    'Cs': {'A': 133, 'Z': 55, 'quenching': 0.08, 'name': 'Cesium'},
 }
 
 
@@ -85,7 +86,7 @@ def helm_form_factor(Q2_GeV2, A):
 
     # Helm form factor
     F = 3.0 * j1_over_qRA * np.exp(-qs**2/2.0)
-    return F**2
+    return np.abs(F)**2
 
 
 def cevns_dsigma_dT(E_nu_MeV, T_recoil_MeV, A, Z):
@@ -352,7 +353,7 @@ def main():
         description='Calculate CEvNS event rates for reactor-based experiments'
     )
     parser.add_argument('--detector', type=str, default='Ge',
-                       choices=['Ge', 'Xe', 'Ar'],
+                       choices=['Ge', 'Xe', 'Ar', 'Cs'],
                        help='Detector material (default: Ge)')
     parser.add_argument('--mass', type=float, default=1.0,
                        help='Detector mass in kg (default: 1.0)')

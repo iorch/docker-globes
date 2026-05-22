@@ -38,13 +38,12 @@ cd /workspace
 
 ```bash
 cd python
-pip install -r requirements.txt
 
 # Calculate event rates
-python cevns_calculator.py
+python3 cevns_calculator.py
 
 # Run full MC simulation
-python mc_simulation.py --output my_simulation
+python3 mc_simulation.py --output my_simulation
 ```
 
 ### 3. Run C++ Examples

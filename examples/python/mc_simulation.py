@@ -362,7 +362,7 @@ def main():
         description='Monte Carlo simulation for reactor CEvNS'
     )
     parser.add_argument('--detector', type=str, default='Ge',
-                       choices=['Ge', 'Xe', 'Ar'],
+                       choices=['Ge', 'Xe', 'Ar', 'Cs'],
                        help='Detector material (default: Ge)')
     parser.add_argument('--mass', type=float, default=1.0,
                        help='Detector mass in kg (default: 1.0)')
