@@ -157,6 +157,14 @@ make clean && make all
 ./mc_event_generator --nevents 50000 --output events.csv
 ```
 
+### Streamlit Gallery
+`examples/python/gallery.py` is a small Streamlit app that browses the plots and summaries written by `mc_simulation.py`. From the host:
+```bash
+docker run --rm -p 8501:8501 -v $(pwd)/examples:/workspace -w /workspace/python \
+    docker-globes streamlit run gallery.py --server.address=0.0.0.0
+```
+Then open <http://localhost:8501>. The gallery anchors on `*_summary.txt`, so any run that produced at least a summary will appear in the sidebar.
+
 ### GLoBES Commands
 ```bash
 globes --version

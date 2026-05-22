@@ -45,6 +45,14 @@ python3 cevns_calculator.py --detector Ge --mass 1.0 --baseline 25.0 --power 3.0
 python3 mc_simulation.py --nevents 10000 --output my_simulation
 ```
 
+#### Browse results in the Streamlit gallery
+After running `mc_simulation.py` one or more times you can browse the resulting plots and summaries from a web UI:
+```bash
+docker run --rm -p 8501:8501 -v $(pwd)/examples:/workspace -w /workspace/python \
+    docker-globes streamlit run gallery.py --server.address=0.0.0.0
+```
+Then open <http://localhost:8501> in your browser. The sidebar lists every run found in `examples/python/` (anchored on `*_summary.txt`).
+
 #### Quick Example (C++)
 ```bash
 cd /workspace/cpp
