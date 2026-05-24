@@ -12,6 +12,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <cmath>
 #include <cstring>
@@ -24,7 +25,7 @@ const double GF = 1.1663787e-5;
 const double SIN2TW = 0.23121;
 const double HBARC = 0.1973;
 const double MEV_TO_GEV = 0.001;
-const double CM2_TO_GEV2 = 2.568e-31;
+const double CM2_TO_GEV2 = 2.568e+27;  // 1 cm^2 in GeV^-2 via (hbar*c)^2
 
 // Default parameters
 struct SimConfig {
@@ -56,11 +57,12 @@ double helm_form_factor(double Q2_GeV2, double A) {
     double qRA = q * RA;
     double qs = q * s;
 
+    // Spherical Bessel function j1(x)/x = (sin x - x cos x)/x^3
     double j1_over_qRA;
     if (qRA < 0.01) {
         j1_over_qRA = 1.0/3.0 - qRA*qRA/30.0;
     } else {
-        j1_over_qRA = (std::sin(qRA)/qRA - std::cos(qRA)) / qRA;
+        j1_over_qRA = (std::sin(qRA) - qRA*std::cos(qRA)) / (qRA*qRA*qRA);
     }
 
     double F = 3.0 * j1_over_qRA * std::exp(-qs*qs/2.0);

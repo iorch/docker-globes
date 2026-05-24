@@ -21,7 +21,7 @@ const double GF = 1.1663787e-5;  // GeV^-2, Fermi constant
 const double SIN2TW = 0.23121;   // sin^2(theta_W)
 const double HBARC = 0.1973;     // GeV·fm
 const double MEV_TO_GEV = 0.001;
-const double CM2_TO_GEV2 = 2.568e-31;
+const double CM2_TO_GEV2 = 2.568e+27;  // 1 cm^2 in GeV^-2 via (hbar*c)^2
 const double NA = 6.022e23;      // Avogadro's number
 const double AMU_TO_KG = 1.66054e-27;  // Atomic mass unit to kg
 
@@ -41,12 +41,12 @@ double helm_form_factor(double Q2_GeV2, double A) {
     double qRA = q * RA;
     double qs = q * s;
 
-    // Spherical Bessel function j1(x)/x
+    // Spherical Bessel function j1(x)/x = (sin x - x cos x)/x^3
     double j1_over_qRA;
     if (qRA < 0.01) {
         j1_over_qRA = 1.0/3.0 - qRA*qRA/30.0;
     } else {
-        j1_over_qRA = (std::sin(qRA)/qRA - std::cos(qRA)) / qRA;
+        j1_over_qRA = (std::sin(qRA) - qRA*std::cos(qRA)) / (qRA*qRA*qRA);
     }
 
     double F = 3.0 * j1_over_qRA * std::exp(-qs*qs/2.0);

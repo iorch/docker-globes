@@ -85,10 +85,11 @@ Where:
 
 ### Coherent Enhancement
 
-For typical nuclei:
-- **Germanium-73** (A=73, Z=32): Q_W ≈ 29.4, σ ∝ 865
-- **Xenon-131** (A=131, Z=54): Q_W ≈ 46.6, σ ∝ 2172
-- **Argon-40** (A=40, Z=18): Q_W ≈ 16.0, σ ∝ 256
+For typical nuclei (Q_W = N − Z(1 − 4·sin²θ_W), sin²θ_W = 0.23121):
+- **Germanium-73** (A=73, Z=32): Q_W ≈ 38.6, σ ∝ 1490
+- **Xenon-131** (A=131, Z=54): Q_W ≈ 72.9, σ ∝ 5320
+- **Argon-40** (A=40, Z=18): Q_W ≈ 20.6, σ ∝ 426
+- **Cesium-133** (A=133, Z=55): Q_W ≈ 73.9, σ ∝ 5457
 
 This N² scaling makes CEvNS favorable for heavy target materials.
 
@@ -815,11 +816,12 @@ HBARC = 0.1973  # GeV fm
 **Weak Charges** (Q_W):
 | Nucleus | A | Z | Q_W | Enhancement (Q_W²) |
 |---------|---|---|-----|-------------------|
-| ²³Na | 23 | 11 | 9.6 | 92 |
-| ⁴⁰Ar | 40 | 18 | 16.0 | 256 |
-| ⁷³Ge | 73 | 32 | 29.4 | 865 |
-| ¹²⁷I | 127 | 53 | 44.7 | 1998 |
-| ¹³¹Xe | 131 | 54 | 46.6 | 2172 |
+| ²³Na | 23 | 11 | 11.2 | 125 |
+| ⁴⁰Ar | 40 | 18 | 20.6 | 426 |
+| ⁷³Ge | 73 | 32 | 38.6 | 1490 |
+| ¹²⁷I | 127 | 53 | 70.0 | 4900 |
+| ¹³¹Xe | 131 | 54 | 72.9 | 5320 |
+| ¹³³Cs | 133 | 55 | 73.9 | 5457 |
 
 **Quenching Factors** (nuclear recoil to electron equivalent):
 - Germanium: q = 0.20 ± 0.02
@@ -888,7 +890,7 @@ python cevns_calculator.py --detector Ge --mass 1.0 --baseline 25.0 --power 3.0
 # Output:
 # Reactor: 3.0 GW at 25.0 m
 # Detector: 1.0 kg Germanium-73
-# Weak charge Q_W: 29.4
+# Weak charge Q_W: 38.6
 # Event rate (no threshold): 102.3 events/day
 # Event rate (0.2 keV_ee): 67.8 events/day
 # Event rate (0.5 keV_ee): 31.2 events/day

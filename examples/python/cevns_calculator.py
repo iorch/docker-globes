@@ -20,7 +20,7 @@ GF = 1.1663787e-5  # GeV^-2, Fermi constant
 SIN2TW = 0.23121   # sin^2(theta_W), weak mixing angle
 HBARC = 0.1973     # GeV fm, conversion factor
 MEV_TO_GEV = 0.001
-CM2_TO_GEV2 = 2.568e-31  # Conversion from GeV^-2 to cm^2
+CM2_TO_GEV2 = 2.568e+27  # 1 cm^2 in GeV^-2; equivalently, 1 GeV^-2 = (hbar*c)^2 ≈ 3.894e-28 cm^2
 
 # Detector properties database
 DETECTORS = {
@@ -70,18 +70,18 @@ def helm_form_factor(Q2_GeV2, A):
     qRA = q * RA
     qs = q * s
 
-    # Spherical Bessel function j1(x)/x
+    # Spherical Bessel function j1(x)/x = (sin x - x cos x)/x^3
     # Use Taylor expansion for small x to avoid numerical issues
     if np.isscalar(qRA):
         if qRA < 0.01:
             j1_over_qRA = 1.0/3.0 - qRA**2/30.0
         else:
-            j1_over_qRA = (np.sin(qRA)/qRA - np.cos(qRA)) / qRA
+            j1_over_qRA = (np.sin(qRA) - qRA*np.cos(qRA)) / qRA**3
     else:
         j1_over_qRA = np.where(
             qRA < 0.01,
             1.0/3.0 - qRA**2/30.0,  # Taylor expansion
-            (np.sin(qRA)/qRA - np.cos(qRA)) / qRA
+            (np.sin(qRA) - qRA*np.cos(qRA)) / qRA**3
         )
 
     # Helm form factor
@@ -128,9 +128,11 @@ def cevns_dsigma_dT(E_nu_MeV, T_recoil_MeV, A, Z):
     dsigma = (GF**2 * MA_GeV) / (4.0 * np.pi)
     dsigma *= QW**2 * F2 * kinematic
 
-    # Convert to cm^2/MeV
-    dsigma /= CM2_TO_GEV2  # GeV^-2 to cm^2
-    dsigma /= MEV_TO_GEV   # per GeV to per MeV
+    # Convert from natural units (GeV^-3) to cm^2/MeV:
+    # 1) GeV^-3 -> cm^2/GeV : multiply by (hbar c)^2 = 1/CM2_TO_GEV2
+    # 2) cm^2/GeV -> cm^2/MeV : multiply by (1 GeV)/(1000 MeV) = MEV_TO_GEV
+    dsigma /= CM2_TO_GEV2
+    dsigma *= MEV_TO_GEV
 
     return dsigma
 

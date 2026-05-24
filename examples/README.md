@@ -100,7 +100,7 @@ Detector Configuration:
   Material: Germanium (A=73, Z=32)
   Mass: 1.0 kg
   Number of targets: 8.27e+24 nuclei
-  Weak charge Q_W: 29.4
+  Weak charge Q_W: 38.6
   Quenching factor: 0.20
 
 Physics Parameters:
@@ -275,7 +275,7 @@ Configuration:
   Detector: 1.0 kg Germanium-73 (A=73, Z=32)
 
 Physics:
-  Weak charge Q_W: 29.40
+  Weak charge Q_W: 38.60
   Number of targets: 8.267e+24
 
 Results:
