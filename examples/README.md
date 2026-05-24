@@ -231,9 +231,20 @@ events = generate_cevns_events(
 plot_spectrum(events, 'my_spectrum.png')
 ```
 
+### gallery.py
+
+Streamlit app that browses every `*_summary.txt` written in this folder and shows the matching `_spectrum.png`, `_flux.png`, `_xsec.png` plus the first rows of `_events.csv` for the selected run.
+
+Launch from the host:
+```bash
+docker run --rm -p 8501:8501 -v $(pwd)/..:/workspace -w /workspace/python \
+    docker-globes streamlit run gallery.py --server.address=0.0.0.0
+```
+Then open <http://localhost:8501>. Generate runs first with `mc_simulation.py`.
+
 ### requirements.txt
 
-Install Python dependencies:
+The Docker image already ships numpy, scipy, matplotlib and streamlit, so `requirements.txt` is only needed when running outside the container:
 ```bash
 pip install -r requirements.txt
 ```
@@ -242,6 +253,7 @@ pip install -r requirements.txt
 - numpy >= 1.20
 - scipy >= 1.7
 - matplotlib >= 3.5
+- streamlit >= 1.0 (for `gallery.py`)
 
 ## C++ Examples
 
